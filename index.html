@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>윤동주의 서울 산책: 1941년, 시인의 길을 걷다</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: "Faded Manuscript" -->
+    <!-- Background: #F9F7F2 (Warm Paper) -->
+    <!-- Primary Text: #2C3333 (Ink Black) -->
+    <!-- Accent: #8D7B68 (Old Wood/Leather) -->
+    <!-- Highlight: #A4907C (Faded Brown) -->
+    <!-- Secondary: #C8B6A6 (Beige) -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F9F7F2;
+            color: #2C3333;
+        }
+        .font-serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        
+        /* Chart Container Styling - Strict Adherence to Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px; /* Constrain width for readability */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for Timeline */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #C8B6A6; 
+            border-radius: 3px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #8D7B68; 
+        }
+
+        /* Interactive Element Styles */
+        .course-btn {
+            transition: all 0.3s ease;
+        }
+        .course-btn:hover {
+            background-color: #E8E4D9;
+            transform: translateX(4px);
+        }
+        .course-btn.active {
+            background-color: #8D7B68;
+            color: #F9F7F2;
+            border-left: 4px solid #2C3333;
+            transform: translateX(4px);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <!-- Application Structure Plan:
+         1. Layout: "Exploratory Dashboard".
+            - Header: Project context and title.
+            - Left Column (Navigation): Vertical timeline of the 5 courses. Acts as the map.
+            - Center Column (Narrative): The core content area. Displays the specific location details, history, and student activities.
+            - Right Column (Insight): Data visualization (Radar Chart) and discussion prompts.
+         2. Logic:
+            - User selects a course from the left timeline.
+            - Center updates with text/images (canvas).
+            - Right updates the Radar Chart to show the "Emotional/Thematic Balance" of that location (Literature, Reality, Nature, Empathy).
+         3. Goal:
+            - To move beyond linear reading and allow students to compare the changing atmosphere of Yun Dong-ju's daily path.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Radar Chart (Chart.js): Maps "Thematic Intensity" [문학(Literature), 자연(Nature), 현실(Reality), 공감(Empathy)].
+            - Goal: Compare/Change. Shows how the mood shifts from "Peaceful Nature" (Course 2) to "Harsh Reality" (Course 3/4).
+         2. Interactive Activity Card:
+            - Goal: Engagement. Allows users to type their thoughts directly for the "Student Activity" mentioned in the source.
+         3. Vertical Timeline:
+            - Goal: Organize. Clearly defines the sequence of the field trip.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-[#8D7B68] text-[#F9F7F2] shadow-lg z-10">
+        <div class="max-w-7xl mx-auto px-4 py-5 flex justify-between items-end">
+            <div>
+                <span class="text-xs tracking-widest uppercase opacity-80">지역 역사 프로젝트</span>
+                <h1 class="text-3xl font-serif font-bold mt-1">윤동주의 서울 산책</h1>
+                <p class="text-sm opacity-90 mt-1">1941년, 암울한 현실 속 시인의 길을 걷다</p>
+            </div>
+            <div class="hidden md:block text-right">
+                <div class="text-xs bg-[#F9F7F2] text-[#8D7B68] px-2 py-1 rounded inline-block font-bold">Project Guide</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Intro Context Section -->
+    <section class="bg-white border-b border-[#E8E4D9]">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <h2 class="text-xl font-serif font-bold text-[#2C3333] mb-2">프로젝트 개요</h2>
+            <p class="text-[#555] text-sm leading-relaxed max-w-4xl">
+                이 디지털 가이드는 1941년, 윤동주가 서울 누상동에서 하숙하며 학교로 향하던 길을 재구성했습니다. 
+                왼쪽의 타임라인을 클릭하여 각 장소에 서린 식민지 지식인의 고뇌와 문학적 감수성을 데이터와 함께 체험해 보세요.
+                <br>
+                <span class="text-xs text-[#8D7B68] mt-2 inline-block">* 주요 텍스트: 윤동주 수필 「종시(終始)」, 정병욱 회고록 「잊지 못할 윤동주 형」</span>
+            </p>
+            
+            <!-- Added Image -->
+            <div class="mt-6 max-w-4xl">
+                <img src="https://postfiles.pstatic.net/MjAyNTA3MjNfMTg1/MDAxNzUzMjMwNDg5NTQ5.z1C1PXlAZQ94e2O5X8z-Du8Iu0wP_XuPE4D6SRKpXlsg.VCiA-zp81IP3n8hfgDKjRGcNn078gE6QPKcfxf_lWkYg.JPEG/%EC%9C%A4%EB%8F%99%EC%A3%BC%EB%AC%B8%ED%95%99%EA%B4%80_%EC%9D%B8%EC%99%95%EC%82%B0%EC%9E%90%EB%9D%BD%EA%B8%B8.jpg?type=w966" alt="윤동주 문학관 인왕산 자락길" class="w-full h-auto rounded-lg shadow-sm border border-[#E8E4D9]">
+                <p class="text-xs text-gray-400 mt-2 text-center">윤동주 문학관 및 인왕산 자락길 전경</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Navigation (The Path) -->
+        <nav class="lg:col-span-3 bg-white rounded-lg shadow-sm border border-[#E8E4D9] flex flex-col h-fit">
+            <div class="p-4 border-b border-[#E8E4D9] bg-[#FDFCF8] rounded-t-lg">
+                <h3 class="font-bold text-[#8D7B68]">답사 코스 (Timeline)</h3>
+                <p class="text-xs text-gray-500">순서대로 답사를 진행하세요.</p>
+            </div>
+            <div class="p-2 space-y-1 custom-scroll max-h-[60vh] overflow-y-auto" id="course-list">
+                <!-- Javascript will populate this list -->
+            </div>
+        </nav>
+
+        <!-- Center Column: Narrative (The Story) -->
+        <section class="lg:col-span-6 flex flex-col gap-6">
+            <!-- Dynamic Content Card -->
+            <div id="content-card" class="bg-white rounded-lg shadow-md border border-[#E8E4D9] p-6 fade-in min-h-[400px]">
+                <div class="flex items-center gap-2 mb-4">
+                    <span id="course-badge" class="bg-[#2C3333] text-white text-xs px-2 py-1 rounded">Course 1</span>
+                    <span class="text-xs text-gray-500 font-serif tracking-wide" id="course-location">종로구 누상동</span>
+                </div>
+                
+                <h2 id="course-title" class="text-2xl font-serif font-bold text-[#2C3333] mb-4 border-b pb-2 border-[#E8E4D9]">
+                    시인의 방, 창작의 산실
+                </h2>
+
+                <!-- Course Image Container -->
+                <img id="course-image" class="w-full h-64 object-cover rounded-lg shadow-sm mb-6 hidden" alt="코스 이미지">
+
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-bold text-[#8D7B68] mb-1 text-sm flex items-center">
+                            📖 역사적 배경
+                        </h4>
+                        <p id="course-history" class="text-sm leading-relaxed text-gray-700 bg-[#F9F7F2] p-4 rounded-md border border-[#E8E4D9]">
+                            1941년 5월~9월, 윤동주가 후배 정병욱과 함께 하숙했던 곳입니다...
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-[#8D7B68] mb-1 text-sm flex items-center">
+                            📍 답사 포인트
+                        </h4>
+                        <ul id="course-points" class="list-disc list-inside text-sm text-gray-700 space-y-1 ml-1">
+                            <!-- Points loaded here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Activity Interaction -->
+            <div class="bg-[#FDFCF8] rounded-lg shadow-sm border border-[#8D7B68] border-dashed p-5">
+                <div class="flex items-start gap-3">
+                    <div class="text-2xl">✍️</div>
+                    <div class="w-full">
+                        <h3 class="font-bold text-[#2C3333] text-sm mb-1">학생 활동</h3>
+                        <p id="activity-prompt" class="text-xs text-gray-600 mb-3">
+                            현재의 골목길에서 1941년 당시 문학 청년들의 대화를 상상해보기.
+                        </p>
+                        <textarea id="student-input" class="w-full h-24 p-3 text-sm bg-white border border-[#E8E4D9] rounded focus:outline-none focus:border-[#8D7B68] transition-colors" placeholder="여기에 당신의 생각이나 관찰 내용을 기록하세요..."></textarea>
+                        <div class="mt-2 flex justify-end">
+                            <button onclick="saveEntry()" class="bg-[#8D7B68] hover:bg-[#756455] text-white text-xs px-4 py-2 rounded transition-colors">
+                                활동 기록 저장
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Insight (The Data) -->
+        <aside class="lg:col-span-3 space-y-6">
+            
+            <!-- Emotional Analysis Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-[#E8E4D9] p-4">
+                <div class="mb-2 text-center">
+                    <h3 class="font-bold text-[#2C3333] text-sm">공간 정서 분석</h3>
+                    <p class="text-xs text-gray-500">각 코스의 심리적/테마적 강도</p>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="emotionChart"></canvas>
+                </div>
+                
+                <div class="mt-3 text-xs text-gray-600 bg-[#F9F7F2] p-2 rounded text-center">
+                    <span id="chart-caption" class="font-semibold text-[#8D7B68]"></span>
+                </div>
+            </div>
+
+            <!-- Discussion Topic -->
+            <div class="bg-[#2C3333] text-[#F9F7F2] rounded-lg p-5 shadow-lg">
+                <h3 class="text-xs font-bold text-[#A4907C] uppercase tracking-wider mb-2">토론 주제</h3>
+                <p id="discussion-topic" class="text-sm font-serif leading-relaxed italic">
+                    "윤동주는 왜 수필 제목을 '시종'이 아닌 '종시'라고 지었을까요?"
+                </p>
+                <div class="mt-4 pt-4 border-t border-gray-600 text-right">
+                    <span class="text-xs text-gray-400">생각 나누기</span>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-[#E8E4D9] mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center md:text-left">
+            <p class="text-xs text-gray-500">
+                &copy; 윤동주 답사 프로젝트 가이드 | Designed for Educational Purpose
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Data Source (Extracted from Report) ---
+        // Scoring (0-10) is interpreted based on the text descriptions to visualize the atmosphere.
+        const tripData = [
+            {
+                id: 1,
+                title: "시인의 방, 창작의 산실",
+                location: "종로구 누상동 하숙집 터",
+                // Image added here
+                image: "https://github.com/hanmimo260/novel260/blob/main/1.webp?raw=true",
+                history: "1941년 5월~9월, 윤동주가 후배 정병욱과 함께 하숙했던 곳입니다. 당시 소설가 김송의 집이었으며, 문학을 논하고 음악을 즐기는 문화적 공간이었습니다.",
+                points: [
+                    "가장 빛나는 시기: 생애 중 가장 많은 기록이 남음, 대표작 9편 탄생.",
+                    "정병욱의 회고: 하숙방 고등학생 국어책에 윤동주의 시가 실려 있던 일화."
+                ],
+                activity: "현재의 골목길에서 1941년 당시 문학 청년들의 대화를 상상해보기.",
+                discussion: "하숙집이라는 사적인 공간이 시인에게 어떤 '문화적 해방구' 역할을 했을까요?",
+                // Themes: Literature(High), Nature(Low), Reality(Low-Mid), Empathy(Mid)
+                chartData: [9, 3, 4, 6],
+                chartCaption: "문학적 창작력이 최고조에 달한 시기"
+            },
+            {
+                id: 2,
+                title: "사색의 길, 자연 속으로",
+                location: "수성동 계곡 ~ 인왕산 중턱",
+                history: "하숙집에서 불과 100여 미터 거리로, 윤동주와 정병욱이 매일 아침 산책하며 세수하던 곳입니다. 겸재 정선의 그림 배경이기도 합니다.",
+                points: [
+                    "우울한 세태의 위로: 아름다운 자연과 벗이 있어 암울한 시대를 잠시 잊음.",
+                    "치유의 공간: 인왕산의 자연 속에서의 사색."
+                ],
+                activity: "수성동 계곡에 앉아 잠시 눈을 감고 물소리를 들으며 시인의 마음 되어보기.",
+                discussion: "자연은 시인에게 단순한 풍경이었을까요, 아니면 도피처였을까요?",
+                // Themes: Literature(Mid), Nature(High), Reality(Low), Empathy(High)
+                chartData: [6, 10, 2, 8],
+                chartCaption: "현실을 잊고 자연 속에서 치유받음"
+            },
+            {
+                id: 3,
+                title: "전차의 종점, 등교의 시작",
+                location: "효자동 전차 종점 터 ~ 광화문",
+                history: "수필 「종시」의 모티프가 된 장소입니다. 1923년 개통된 통의동선 전차의 종점이었습니다.",
+                points: [
+                    "식민 통치의 현장: 차창 밖 거대한 '조선총독부 청사'를 목격.",
+                    "현실 직시: 식민지 조선의 현실을 마주하는 시인의 시선."
+                ],
+                activity: "현재의 광화문 광장과 과거 사진(조선총독부)을 비교하며 토론하기.",
+                discussion: "윤동주는 왜 수필 제목을 '시종(시작과 끝)'이 아닌 '종시(끝과 시작)'라고 지었을까요?",
+                // Themes: Literature(Low), Nature(Low), Reality(High), Empathy(Mid)
+                chartData: [4, 1, 10, 5],
+                chartCaption: "식민 통치 기구를 보며 냉혹한 현실 자각"
+            },
+            {
+                id: 4,
+                title: "환승과 관찰, 민중의 삶",
+                location: "서울역 ~ 아현/의영터널 구간",
+                history: "전차에서 기차로 환승하는 구간입니다. 당시 터널 부근은 복선화 공사가 한창이었습니다.",
+                points: [
+                    "비극적 현실의 자각: '북경행'을 붙인 트럭과 조선인 노동자들 목격.",
+                    "희극이자 비극: 겉으로는 활기차 보이나 내면은 비극인 민중의 삶과 동일시."
+                ],
+                activity: "수필 「종시」의 구절을 낭독하며 '희극이자 비극'의 의미 생각해보기.",
+                discussion: "노동자들을 보며 느낀 '희극이자 비극'이라는 감정은 무엇을 의미할까요?",
+                // Themes: Literature(Mid), Nature(Low), Reality(High), Empathy(High)
+                chartData: [5, 0, 9, 10],
+                chartCaption: "고통받는 민중의 삶에 대한 깊은 공감"
+            },
+            {
+                id: 5,
+                title: "배움의 터전, 연희전문 가는 길",
+                location: "연희역 터 (신촌로 9길)",
+                history: "윤동주가 내렸던 역은 현재의 신촌역이 아닌 옛 '연희역'입니다. 현재는 철로가 걷히고 둥그렇게 휘어진 도로만 남아있습니다.",
+                points: [
+                    "사라진 역의 흔적: 지형을 통해 당시의 통학로 복원.",
+                    "마지막 등굣길: 시인이 걸었던 배움의 길."
+                ],
+                activity: "옛 지도와 현재 지도를 겹쳐보며 윤동주의 마지막 등교 도보 경로 그려보기.",
+                discussion: "사라진 공간(연희역)을 통해 우리는 무엇을 기억해야 할까요?",
+                // Themes: Literature(High), Nature(Mid), Reality(Mid), Empathy(Mid)
+                chartData: [8, 4, 6, 6],
+                chartCaption: "배움의 공간으로 향하며 문학적 의지 회복"
+            }
+        ];
+
+        // --- State Management ---
+        let currentCourseIndex = 0;
+        let emotionChart = null;
+
+        // --- Core Interaction Functions ---
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNav();
+            loadCourse(0);
+            initChart();
+        });
+
+        // Render Navigation List
+        function renderNav() {
+            const listContainer = document.getElementById('course-list');
+            listContainer.innerHTML = '';
+            
+            tripData.forEach((course, index) => {
+                const btn = document.createElement('button');
+                btn.className = `course-btn w-full text-left p-3 rounded mb-1 flex flex-col items-start ${index === 0 ? 'active' : ''}`;
+                btn.onclick = () => loadCourse(index);
+                btn.innerHTML = `
+                    <span class="text-xs font-bold opacity-70 mb-1">제${course.id}코스</span>
+                    <span class="font-bold text-sm leading-tight">${course.title}</span>
+                `;
+                btn.dataset.index = index; // Store index for reference
+                listContainer.appendChild(btn);
+            });
+        }
+
+        // Load Course Content
+        function loadCourse(index) {
+            currentCourseIndex = index;
+            const data = tripData[index];
+
+            // Update UI State (Navigation Active Class)
+            document.querySelectorAll('.course-btn').forEach(btn => {
+                if(parseInt(btn.dataset.index) === index) {
+                    btn.classList.add('active');
+                    btn.classList.remove('text-[#2C3333]', 'bg-transparent');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('text-[#2C3333]');
+                }
+            });
+
+            // Update Content (Animation Reset)
+            const contentCard = document.getElementById('content-card');
+            contentCard.classList.remove('fade-in');
+            void contentCard.offsetWidth; // Trigger reflow
+            contentCard.classList.add('fade-in');
+
+            // Populate Text
+            document.getElementById('course-badge').textContent = `제${data.id}코스`;
+            document.getElementById('course-location').textContent = data.location;
+            document.getElementById('course-title').textContent = data.title;
+            
+            // Image Handling
+            const imgEl = document.getElementById('course-image');
+            if (data.image) {
+                imgEl.src = data.image;
+                imgEl.classList.remove('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+            }
+
+            document.getElementById('course-history').textContent = data.history;
+            document.getElementById('activity-prompt').textContent = data.activity;
+            document.getElementById('discussion-topic').textContent = `"${data.discussion}"`;
+            document.getElementById('chart-caption').textContent = data.chartCaption;
+
+            // Clear Input
+            document.getElementById('student-input').value = localStorage.getItem(`yun_project_note_${index}`) || '';
+
+            // Populate Points List
+            const pointsList = document.getElementById('course-points');
+            pointsList.innerHTML = '';
+            data.points.forEach(point => {
+                const li = document.createElement('li');
+                // Bold the part before the colon if exists
+                if(point.includes(':')) {
+                    const parts = point.split(':');
+                    li.innerHTML = `<strong>${parts[0]}:</strong> ${parts[1]}`;
+                } else {
+                    li.textContent = point;
+                }
+                pointsList.appendChild(li);
+            });
+
+            // Update Chart
+            updateChart(data.chartData);
+        }
+
+        // --- Chart.js Logic ---
+        function initChart() {
+            const ctx = document.getElementById('emotionChart').getContext('2d');
+            
+            emotionChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['문학/이상', '자연/치유', '식민지 현실', '공감/성찰'],
+                    datasets: [{
+                        label: '공간 테마 강도',
+                        data: [0, 0, 0, 0], // Initial empty
+                        backgroundColor: 'rgba(141, 123, 104, 0.4)', // #8D7B68 with opacity
+                        borderColor: '#8D7B68',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#2C3333',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#2C3333'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Critical for container fit
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: '#E8E4D9'
+                            },
+                            grid: {
+                                color: '#E8E4D9'
+                            },
+                            pointLabels: {
+                                font: {
+                                    family: "'Noto Sans KR', sans-serif",
+                                    size: 11
+                                },
+                                color: '#2C3333'
+                            },
+                            ticks: {
+                                display: false, // Hide numbers for cleaner look
+                                max: 10,
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' / 10';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(newData) {
+            if (emotionChart) {
+                emotionChart.data.datasets[0].data = newData;
+                emotionChart.update();
+            }
+        }
+
+        // --- Engagement Logic ---
+        function saveEntry() {
+            const inputVal = document.getElementById('student-input').value;
+            if(!inputVal.trim()) {
+                alert('내용을 입력해주세요.');
+                return;
+            }
+            // Save to localStorage
+            localStorage.setItem(`yun_project_note_${currentCourseIndex}`, inputVal);
+            
+            // Visual feedback
+            const btn = document.querySelector('button[onclick="saveEntry()"]');
+            const originalText = btn.textContent;
+            btn.textContent = "저장 완료!";
+            btn.classList.remove('bg-[#8D7B68]');
+            btn.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('bg-green-600');
+                btn.classList.add('bg-[#8D7B68]');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>ㅑ
